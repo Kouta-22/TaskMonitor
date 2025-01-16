@@ -10,6 +10,15 @@ def delete_registro_geral(sender, instance, **kwargs):
     """
     Deleta o registro correspondente em RegistroGeral quando qualquer sala é deletada.
     """
+
+    try:
+        # Identificar o tipo de sala e deletar o registro relacionado
+        content_object = instance.sala  # O campo `GenericForeignKey` no RegistroGeral
+        if content_object:
+            content_object.delete()
+    except Exception as e:
+        print(f"Erro ao deletar o registro de sala associado: {e}")
+
     if sender in SALA_MODELS:
         # Exclui o RegistroGeral correspondente ao registro deletado
         RegistroGeral.objects.filter(sala_id=instance.id).delete()

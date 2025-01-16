@@ -57,10 +57,25 @@
                 {% for registro in registros %}
                 <tr>
                     <td>{{ registro.tipo_sala }}</td>
-                    <td>{{ registro.observacao }}</td>
-                    <td>{{ registro.temperatura }}°C</td>
+                    <td>{{ registro.sala.observation }}</td>
+                    <td>{{ registro.sala.temperature }}°C</td>
                     <td>{{ registro.user.username }}</td>
-                    <td>{{ registro.data_criacao|date:"d/m/Y H:i" }}</td>
+                    <td>{{ registro.created_at|date:"d/m/Y H:i" }}</td>
+
+                    <td>
+                        <form method="post" action="{% url 'deletar_registro' registro.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este registro?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form> 
+
+                        <td>
+                            <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                        </td>
+
                 </tr>
                 {% empty %}
                 <tr>
@@ -78,10 +93,25 @@
                 {{ registro.tipo_sala }}
             </div>
             <div class="card-body">
-                <p><strong>Observação:</strong> {{ registro.observacao }}</p>
-                <p><strong>Temperatura:</strong> {{ registro.temperatura }}°C</p>
+                <p><strong>Observação:</strong> {{ registro.sala.observation }}</p>
+                <p><strong>Temperatura:</strong> {{ registro.sala.temperature }}°C</p>
                 <p><strong>Criado por:</strong> {{ registro.user.username }}</p>
-                <p><strong>Data de Criação:</strong> {{ registro.data_criacao|date:"d/m/Y H:i" }}</p>
+                <p><strong>Data de Criação:</strong> {{ registro.created_at|date:"d/m/Y H:i" }}</p>
+
+                <form method="post" action="{% url 'deletar_registro' registro.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm w-100 mt-2" onclick="return confirm('Tem certeza que deseja excluir este registro?');">
+                        <i class="bi bi-trash"></i> Excluir
+                    </button>
+                </form>
+
+                <td>
+                    <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </td>
+
+
             </div>
         </div>
         {% empty %}

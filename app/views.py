@@ -6,9 +6,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.utils import DataError
 from django.http import HttpResponse
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.dateparse import parse_date
 from pytz import timezone as pytz_timezone
+from django.contrib.contenttypes.models import ContentType
 from datetime import datetime   
 
 def ignore_favicon(request):
@@ -19,22 +20,17 @@ def is_manager(user):
 
 # View para exibir os registros de gerenciamento (apenas para gerentes)
 def gerenciamento_registros(request):
-    registros = RegistroGeral.objects.all().order_by('-data_criacao')
+    registros = RegistroGeral.objects.select_related('content_type').all().order_by('-created_at')
 
-    # Define o fuso horário de São Paulo
-    fuso_br = pytz_timezone('America/Sao_Paulo')
-
-    # Ajusta a data de criação dos registros para o fuso horário correto
+    # Enriquecendo os registros com dados específicos das salas
     for registro in registros:
-        if registro.data_criacao:
-            registro.data_criacao = registro.data_criacao.astimezone(fuso_br)
+        registro.sala_detalhes = registro.sala  # Relacionamento genérico já cuida disso
 
-    # Filtragem por data
+    # Filtragem por data (usando o campo `created_at` do RegistroGeral)
     data_filtrada = request.GET.get('data')
     if data_filtrada:
         try:
-            data_filtrada_obj = datetime.strptime(data_filtrada, "%Y-%m-%d").date()
-            registros = registros.filter(data_criacao__date=data_filtrada_obj)
+            registros = registros.filter(created_at__date=data_filtrada)
         except ValueError:
             registros = registros.none()
 
@@ -44,7 +40,6 @@ def gerenciamento_registros(request):
     registros = paginator.get_page(page_number)
 
     return render(request, 'app/gerenciamento_registros.html', {'registros': registros})
-
  
 # View para login
 def login_view(request):
@@ -124,4 +119,29 @@ def deletar_registro(request, registro_id):
         messages.success(request, "Registro excluído com sucesso!")
     except Exception as e:
         messages.error(request, f"Erro ao excluir o registro: {e}")
-    return redirect('home')
+    return redirect('gerenciamento_registros')
+
+
+
+@login_required
+@user_passes_test(is_manager)
+def atualizar_registro(request, registro_id):
+    registro = get_object_or_404(RegistroGeral, id=registro_id)
+
+    if request.method == 'POST':
+        # Atualiza os campos do registro
+        registro.observation = request.POST.get('observation',registro.sala.observation)
+        registro.temperature = request.POST.get('temperature', registro.sala.temperature)
+
+        registro.user = request.user
+
+        registro.sala.save()
+        registro.save()
+
+        messages.success(request,'Registro atualizado com sucesso!')
+        return redirect('gerenciamento_registros')
+    
+    context = {
+        'registro':registro,
+    }
+    return render(request, 'app/atualizar_registro.html', context)
