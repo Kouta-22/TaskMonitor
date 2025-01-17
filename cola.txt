@@ -105,5 +105,4 @@ class SalaEnergia(SalaBase):
         )
 
 
-
-glpat-gxc3bC_rkLGWoGm3yV39
+    
