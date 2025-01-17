@@ -115,7 +115,7 @@ def registrar_sala(request, tipo_sala):
 def deletar_registro(request, registro_id):
     registro = get_object_or_404(RegistroGeral, id=registro_id)
     try:
-        registro.delete()  # Exclui diretamente; o sinal post_delete fará o resto.
+        registro.delete()  # Exclui diretamente; o sinal `post_delete` cuida do resto.
         messages.success(request, "Registro excluído com sucesso!")
     except Exception as e:
         messages.error(request, f"Erro ao excluir o registro: {e}")
@@ -126,22 +126,35 @@ def deletar_registro(request, registro_id):
 @login_required
 @user_passes_test(is_manager)
 def atualizar_registro(request, registro_id):
+    # Busca o registro geral
     registro = get_object_or_404(RegistroGeral, id=registro_id)
+    sala = registro.sala
+
+    if not sala:
+        messages.error(request, "Erro: Nenhuma sala associada ao registro.")
+        return redirect('gerenciamento_registros')
 
     if request.method == 'POST':
-        # Atualiza os campos do registro
-        registro.observation = request.POST.get('observation',registro.sala.observation)
-        registro.temperature = request.POST.get('temperature', registro.sala.temperature)
+        observation = request.POST.get('observation')
+        temperature = request.POST.get('temperature')
 
-        registro.user = request.user
+        # Verifique se os valores foram enviados e atualize somente se necessário
+        if observation is not None:
+            sala.observation = observation
+        if temperature is not None:
+            sala.temperature = temperature
 
-        registro.sala.save()
-        registro.save()
+        registro.user = request.user  # Atualiza o usuário responsável pela modificação
 
-        messages.success(request,'Registro atualizado com sucesso!')
+        try:
+            sala.save()
+            registro.save()
+            messages.success(request, 'Registro atualizado com sucesso!')
+        except Exception as e:
+            messages.error(request, f"Erro ao atualizar o registro: {e}")
+
         return redirect('gerenciamento_registros')
-    
-    context = {
-        'registro':registro,
-    }
+
+    context = {'registro': registro}
     return render(request, 'app/atualizar_registro.html', context)
+

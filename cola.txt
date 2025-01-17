@@ -103,3 +103,7 @@ class SalaEnergia(SalaBase):
             data_criacao=self.created_at.date(),
             defaults={'user': user}
         )
+
+
+
+glpat-gxc3bC_rkLGWoGm3yV39

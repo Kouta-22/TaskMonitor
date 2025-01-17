@@ -51,6 +51,8 @@
                     <th>Temperatura</th>
                     <th>Criado por</th>
                     <th>Data de Criação</th>
+                    <th>Deletar</th>
+                    <th>Atualizar</th>
                 </tr>
             </thead>
             <tbody>
@@ -106,7 +108,7 @@
                 </form>
 
                 <td>
-                    <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm">
+                    <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm w-100 mt-2">
                         <i class="bi bi-pencil"></i> Editar
                     </a>
                 </td>
