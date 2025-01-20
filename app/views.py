@@ -12,6 +12,8 @@ from pytz import timezone as pytz_timezone
 from django.contrib.contenttypes.models import ContentType
 from datetime import datetime   
 
+from django.contrib.auth.models import User
+
 def ignore_favicon(request):
     return HttpResponse(status=204)
 # Função auxiliar para verificar se o usuário é gerente
@@ -34,12 +36,18 @@ def gerenciamento_registros(request):
         except ValueError:
             registros = registros.none()
 
+    filtro_usuario = request.GET.get('usuario', '')
+    if filtro_usuario:
+        registros = registros.filter(user__username=filtro_usuario)
+    
+    usuarios = User.objects.all()
+
     # Paginação
     paginator = Paginator(registros, 12)
     page_number = request.GET.get('page')
     registros = paginator.get_page(page_number)
 
-    return render(request, 'app/gerenciamento_registros.html', {'registros': registros})
+    return render(request, 'app/gerenciamento_registros.html', {'registros': registros, 'usuarios' : usuarios })
  
 # View para login
 def login_view(request):

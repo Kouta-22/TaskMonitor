@@ -39,6 +39,20 @@
     </div>
 </form>
 
+<form method="GET" action="{% url 'gerenciamento_registros' %}" class="mb-4">
+    <div class="input-group">
+        <select name="usuario" class="form-select">
+            <option value="" {% if not filtro_usuario %}selected{% endif %}>Todos os usuários</option>
+            {% for usuario in usuarios %}
+                <option value="{{ usuario.username }}" {% if filtro_usuario == usuario.username %}selected{% endif %}>
+                    {{ usuario.username }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+</form>
+
 
 <div class="container mt-5">
     <h2 class="mb-4">Registros de Salas</h2>
