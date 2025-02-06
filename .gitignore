@@ -1,3 +1,7 @@
 .venv
 db.sqlite3
 .env
+# Ignorar arquivos de imagem na pasta media/uploads/salas
+media/uploads/salas/*.webp
+media/uploads/salas/*.jpg
+media/uploads/salas/*.jpeg

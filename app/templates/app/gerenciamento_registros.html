@@ -53,7 +53,6 @@
     </div>
 </form>
 
-
 <div class="container mt-5">
     <h2 class="mb-4">Registros de Salas</h2>
     <div class="table-responsive d-none d-sm-block">
@@ -65,6 +64,7 @@
                     <th>Temperatura</th>
                     <th>Criado por</th>
                     <th>Data de Criação</th>
+                    <th>Imagem</th>
                     <th>Deletar</th>
                     <th>Atualizar</th>
                 </tr>
@@ -79,61 +79,142 @@
                     <td>{{ registro.created_at|date:"d/m/Y H:i" }}</td>
 
                     <td>
+                        {% if registro.sala.image %}
+                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#imagemModal{{ forloop.counter }}">
+                                <i class="bi bi-eye"></i> Ver Imagem
+                            </button>
+                            <!-- Modal -->
+                            <div class="modal fade" id="imagemModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="imagemModalLabel{{ forloop.counter }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="imagemModalLabel{{ forloop.counter }}">Imagem da Sala</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <img src="{{ registro.sala.image.url }}" alt="Imagem da Sala" class="img-fluid rounded">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">Sem Imagem</span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
                         <form method="post" action="{% url 'deletar_registro' registro.id %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este registro?');">
                                 <i class="bi bi-trash"></i>
                             </button>
-                        </form> 
+                        </form>
+                    </td>
+                    <td>
+                        <!-- Botão para abrir o modal de edição -->
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal{{ forloop.counter }}">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
 
-                        <td>
-                            <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                        </td>
+                        <!-- Modal de Edição -->
+                        <div class="modal fade" id="editarModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="editarModalLabel{{ forloop.counter }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editarModalLabel{{ forloop.counter }}">Editar Registro</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post" action="{% url 'atualizar_registro' registro.id %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="observation{{ forloop.counter }}" class="form-label">Observação</label>
+                                                <textarea name="observation" id="observation{{ forloop.counter }}" class="form-control" rows="3" required>{{ registro.sala.observation }}</textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="temperature{{ forloop.counter }}" class="form-label">Temperatura (°C)</label>
+                                                <input type="number" name="temperature" id="temperature{{ forloop.counter }}" class="form-control" value="{{ registro.sala.temperature }}" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
 
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center">Nenhum registro encontrado.</td>
+                    <td colspan="8" class="text-center">Nenhum registro encontrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+</div>
 
-    <div class="d-sm-none">
-        {% for registro in registros %}
-        <div class="card mb-3 shadow">
-            <div class="card-header bg-primary text-white">
-                {{ registro.tipo_sala }}
-            </div>
-            <div class="card-body">
-                <p><strong>Observação:</strong> {{ registro.sala.observation }}</p>
-                <p><strong>Temperatura:</strong> {{ registro.sala.temperature }}°C</p>
-                <p><strong>Criado por:</strong> {{ registro.user.username }}</p>
-                <p><strong>Data de Criação:</strong> {{ registro.created_at|date:"d/m/Y H:i" }}</p>
-
-                <form method="post" action="{% url 'deletar_registro' registro.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm w-100 mt-2" onclick="return confirm('Tem certeza que deseja excluir este registro?');">
-                        <i class="bi bi-trash"></i> Excluir
-                    </button>
-                </form>
-
-                <td>
-                    <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm w-100 mt-2">
-                        <i class="bi bi-pencil"></i> Editar
-                    </a>
-                </td>
-
-
-            </div>
+<div class="d-sm-none">
+    {% for registro in registros %}
+    <div class="card mb-3 shadow">
+        <div class="card-header bg-primary text-white">
+            {{ registro.tipo_sala }}
         </div>
-        {% empty %}
-        <div class="text-center">Nenhum registro encontrado.</div>
-        {% endfor %}
+        <div class="card-body">
+            <p><strong>Observação:</strong> {{ registro.sala.observation }}</p>
+            <p><strong>Temperatura:</strong> {{ registro.sala.temperature }}°C</p>
+            <p><strong>Criado por:</strong> {{ registro.user.username }}</p>
+            <p><strong>Data de Criação:</strong> {{ registro.created_at|date:"d/m/Y H:i" }}</p>
+
+            {% if registro.sala.image %}
+                <!-- Botão para abrir modal -->
+                <button class="btn btn-info btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#imagemModal{{ forloop.counter }}">
+                    <i class="bi bi-eye"></i> Ver Imagem
+                </button>
+
+                <!-- Modal para exibir a imagem -->
+                <div class="modal fade" id="imagemModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="imagemModalLabel{{ forloop.counter }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="imagemModalLabel{{ forloop.counter }}">Imagem da Sala</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="{{ registro.sala.image.url }}" alt="Imagem da Sala" class="img-fluid rounded">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <span class="text-muted">Sem Imagem</span>
+            {% endif %}
+
+            <!-- Botões de ação -->
+            <form method="post" action="{% url 'deletar_registro' registro.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm w-100 mt-2" onclick="return confirm('Tem certeza que deseja excluir este registro?');">
+                    <i class="bi bi-trash"></i> Excluir
+                </button>
+            </form>
+
+            <a href="{% url 'atualizar_registro' registro.id %}" class="btn btn-warning btn-sm w-100 mt-2">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+        </div>
     </div>
+    {% empty %}
+    <div class="text-center">Nenhum registro encontrado.</div>
+    {% endfor %}
+</div>
+
 
 
     <!-- Paginação -->
